@@ -1,23 +1,53 @@
-const puppeteer = require('puppeteer');
-
+const ExcelJS = require('exceljs');
+const puppeteer = require("puppeteer");
+const XLSX = require("xlsx");
+const path = require('path');
+const fs = require('fs');
 
 const URL = `https://www.magazineluiza.com.br/busca/geladeira/`;
-
-(async () => {
+const scraper = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.87 Safari/537.36');
-    await page.goto(URL, { waitUntil: 'networkidle2' });
-    await page.screenshot({ path: './print.png', fullPage: true });
-    const elements= await page.$$('[data-testid="product-title"]')
+    await page.goto(URL, {waitUntil: 'networkidle2'});
 
 
+    const models = await page.$$eval('[data-testid="product-card-container"]', (nodes) => {
+        const regex = /\b[A-Z]\w*\d\w*\b/;
 
-   for (let element of elements) {
-       const value = await page.evaluate(el => el.textContent, element);
-       console.log('Valor do elemento:', value);
-   }
+        return nodes.map((node) => {
+            const nameElement = node.querySelector('[data-testid="product-title"]');
+            const priceElement = node.querySelector('[data-testid="price-value"]');
 
-    console.log(elements.length);
+            const name = nameElement ? nameElement.innerText : '';
+            const price = priceElement ? priceElement.innerText : '';
+            const model = name.match(regex)
+            return {name, model, price};
+        });
+    });
+
+    worksheet.columns = [
+        { header: 'Name', key: 'name' },
+        { header: 'Price', key: 'price' },
+        { header: 'Model', key: 'model' }
+    ];
+
+
+    models.forEach((item) => {
+        worksheet.addRow(item);
+    });
+    const directory = './sheets';
+    const filePath = path.join(directory, 'data.xlsx');
+    workbook.xlsx.writeFile(filePath).then(() => {
+        console.log('File saved successfully!');
+    });
+
+    if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory);
+    }
+
     await browser.close();
-})();
+}
+
+scraper();
