@@ -1,6 +1,5 @@
 const ExcelJS = require('exceljs');
 const puppeteer = require("puppeteer");
-const XLSX = require("xlsx");
 const path = require('path');
 const fs = require('fs');
 
