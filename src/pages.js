@@ -11,20 +11,8 @@ const URL = `https://www.magazineluiza.com.br/busca/geladeira/`;
 
     await page.waitForSelector('[data-testid="product-list"]');
 
-    // const elements = await page.$$eval('[data-testid="product-list"]', (nodes) =>
-    //     nodes.forEach((element) => {
-    //         nodes.map((node) => {
-    //             const name = node.querySelector('.sc-ZEldx.llMBjh').innerText;
-    //             const price = node.querySelector('.sc-kpDqfm.eCPtRw.sc-hBtRBD.fPPQXa').innerText;
-    //
-    //             return `${name}\n${price}\n+`;
-    //         })
-    //     })
-    // );
-    //
-    // console.log(elements);
-
     const elements = await page.$$eval('[data-testid="product-card-container"]', (nodes) => {
+        const regex = /\b[A-Z]\w*\d\w*\b/;
 
         return nodes.map((node) => {
             const nameElement = node.querySelector('[data-testid="product-title"]');
@@ -35,7 +23,9 @@ const URL = `https://www.magazineluiza.com.br/busca/geladeira/`;
             const model = modelElement ? modelElement.innerText : '';
             const price = priceElement ? priceElement.innerText : '';
 
-            return { name, model, price };
+            return name.match(regex)
+
+            // return { name, model, price };
         });
     });
 
