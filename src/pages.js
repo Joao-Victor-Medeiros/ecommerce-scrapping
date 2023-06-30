@@ -16,7 +16,6 @@ const URL = `https://www.magazineluiza.com.br/busca/geladeira/`;
 
        return nodes.map((node) => {
             const nameElement = node.querySelector('[data-testid="product-title"]');
-            const modelElement = node.querySelector('[data-testid="review"]');
             const priceElement = node.querySelector('[data-testid="price-value"]');
 
             const name = nameElement ? nameElement.innerText : '';
